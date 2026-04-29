@@ -704,6 +704,72 @@ export type Database = {
           },
         ]
       }
+      member_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          error_message: string | null
+          expires_at: string | null
+          full_name: string | null
+          id: string
+          invited_at: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["invitation_status"]
+          subteam: Database["public"]["Enums"]["app_subteam"] | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          error_message?: string | null
+          expires_at?: string | null
+          full_name?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["invitation_status"]
+          subteam?: Database["public"]["Enums"]["app_subteam"] | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          expires_at?: string | null
+          full_name?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["invitation_status"]
+          subteam?: Database["public"]["Enums"]["app_subteam"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_events: {
         Row: {
           actor_id: string | null
@@ -1342,6 +1408,11 @@ export type Database = {
         | "manufacturing_testing"
         | "systems_engineering"
         | "business_ops"
+        | "executive_board"
+        | "mechanical_design"
+        | "sponsorship_finance"
+        | "marketing"
+        | "welfare_inclusion"
       approval_status:
         | "draft"
         | "in_review"
@@ -1376,6 +1447,12 @@ export type Database = {
         | "fixed"
         | "verified_closed"
         | "rejected"
+      invitation_status:
+        | "pending"
+        | "accepted"
+        | "expired"
+        | "revoked"
+        | "failed"
       notification_event_type:
         | "fault_created"
         | "fault_assigned"
@@ -1536,6 +1613,11 @@ export const Constants = {
         "manufacturing_testing",
         "systems_engineering",
         "business_ops",
+        "executive_board",
+        "mechanical_design",
+        "sponsorship_finance",
+        "marketing",
+        "welfare_inclusion",
       ],
       approval_status: [
         "draft",
@@ -1575,6 +1657,13 @@ export const Constants = {
         "fixed",
         "verified_closed",
         "rejected",
+      ],
+      invitation_status: [
+        "pending",
+        "accepted",
+        "expired",
+        "revoked",
+        "failed",
       ],
       notification_event_type: [
         "fault_created",

@@ -5,10 +5,11 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Gryphon Hub",
     short_name: "Gryphon Hub",
     description: "Internal operations platform for Gryphon Railways.",
-    start_url: "/dashboard",
+    start_url: "/",
+    scope: "/",
     display: "standalone",
-    background_color: "#0f172a",
-    theme_color: "#0f172a",
+    background_color: "#ffffff",
+    theme_color: "#071625",
     orientation: "portrait",
     icons: [
       {
@@ -20,6 +21,12 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/icons/icon-512.png",
         sizes: "512x512",
         type: "image/png",
+      },
+      {
+        src: "/icons/maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };
