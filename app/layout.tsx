@@ -46,7 +46,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#071625",
+  themeColor: "#020617",
 };
 
 export default function RootLayout({
@@ -66,7 +66,7 @@ export default function RootLayout({
         inter.variable
       )}
     >
-      <body className="flex min-h-full flex-col overflow-x-hidden bg-[#071625]">
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-slate-950">
         <ServiceWorkerRegistration />
         {children}
       </body>

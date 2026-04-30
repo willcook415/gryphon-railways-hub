@@ -13,7 +13,7 @@ import {
   getSubteamLabel,
   isActiveSubteam,
 } from "@/lib/team-options";
-import { inviteMember, updateMember } from "./actions";
+import { inviteMember, setMemberPassword, updateMember } from "./actions";
 
 type AppRole = Enums<"app_role">;
 type AppSubteam = Enums<"app_subteam">;
@@ -186,7 +186,7 @@ export default async function AdminMembersPage({
                 Member management
               </h1>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Invite members and manage profile access.
+                Create member accounts and manage profile access.
               </p>
             </div>
             <Button asChild variant="outline">
@@ -212,7 +212,7 @@ export default async function AdminMembersPage({
             <h2 className="text-lg font-semibold">Add a member</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Creates or updates the member account profile for Gryphon Hub
-              access.
+              access. Share the initial password securely with the member.
             </p>
           </div>
 
@@ -239,6 +239,32 @@ export default async function AdminMembersPage({
             </label>
 
             <label className="space-y-2 text-sm font-medium">
+              Initial password
+              <input
+                autoComplete="new-password"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                minLength={8}
+                name="initial_password"
+                placeholder="Minimum 8 characters"
+                required
+                type="password"
+              />
+            </label>
+
+            <label className="space-y-2 text-sm font-medium">
+              Confirm initial password
+              <input
+                autoComplete="new-password"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                minLength={8}
+                name="confirm_initial_password"
+                placeholder="Repeat password"
+                required
+                type="password"
+              />
+            </label>
+
+            <label className="space-y-2 text-sm font-medium">
               Role
               <SelectRole defaultValue="member" />
             </label>
@@ -246,6 +272,16 @@ export default async function AdminMembersPage({
             <label className="space-y-2 text-sm font-medium">
               Subteam
               <SelectSubteam defaultValue={DEFAULT_ACTIVE_SUBTEAM} />
+            </label>
+
+            <label className="flex h-10 items-center gap-2 text-sm font-medium">
+              <input
+                className="size-4 rounded border-input"
+                defaultChecked
+                name="is_active"
+                type="checkbox"
+              />
+              Active
             </label>
 
             <div className="sm:col-span-2">
@@ -275,14 +311,8 @@ export default async function AdminMembersPage({
 
           <div className="grid gap-3">
             {(members as Profile[] | null)?.map((member) => (
-              <form
-                action={updateMember}
-                className="rounded-md border p-4"
-                key={member.id}
-              >
-                <input name="id" type="hidden" value={member.id} />
-
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <article className="rounded-md border p-4" key={member.id}>
+                <div className="flex flex-col gap-4">
                   <div className="min-w-0">
                     <h3 className="truncate text-sm font-semibold">
                       {member.full_name ??
@@ -298,33 +328,79 @@ export default async function AdminMembersPage({
                     </p>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
-                    <label className="space-y-2 text-sm font-medium">
-                      Role
-                      <SelectRole defaultValue={member.role} />
-                    </label>
+                  <form action={updateMember}>
+                    <input name="id" type="hidden" value={member.id} />
+                    <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
+                      <label className="space-y-2 text-sm font-medium">
+                        Role
+                        <SelectRole defaultValue={member.role} />
+                      </label>
 
-                    <label className="space-y-2 text-sm font-medium">
-                      Subteam
-                      <SelectSubteam defaultValue={member.subteam} />
-                    </label>
+                      <label className="space-y-2 text-sm font-medium">
+                        Subteam
+                        <SelectSubteam defaultValue={member.subteam} />
+                      </label>
 
-                    <label className="flex h-9 items-center gap-2 text-sm font-medium">
-                      <input
-                        className="size-4 rounded border-input"
-                        defaultChecked={member.is_active}
-                        name="is_active"
-                        type="checkbox"
-                      />
-                      Active
-                    </label>
+                      <label className="flex h-9 items-center gap-2 text-sm font-medium">
+                        <input
+                          className="size-4 rounded border-input"
+                          defaultChecked={member.is_active}
+                          name="is_active"
+                          type="checkbox"
+                        />
+                        Active
+                      </label>
 
-                    <Button type="submit" variant="outline">
-                      Save
-                    </Button>
-                  </div>
+                      <Button type="submit" variant="outline">
+                        Save
+                      </Button>
+                    </div>
+                  </form>
+
+                  <details className="rounded-md border bg-muted/30 p-3">
+                    <summary className="cursor-pointer text-sm font-medium">
+                      Set new password
+                    </summary>
+                    <form
+                      action={setMemberPassword}
+                      className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+                    >
+                      <input name="id" type="hidden" value={member.id} />
+                      <label className="space-y-2 text-sm font-medium">
+                        New password
+                        <input
+                          autoComplete="new-password"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                          minLength={8}
+                          name="new_password"
+                          placeholder="Minimum 8 characters"
+                          required
+                          type="password"
+                        />
+                      </label>
+                      <label className="space-y-2 text-sm font-medium">
+                        Confirm password
+                        <input
+                          autoComplete="new-password"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                          minLength={8}
+                          name="confirm_new_password"
+                          placeholder="Repeat password"
+                          required
+                          type="password"
+                        />
+                      </label>
+                      <Button type="submit" variant="outline">
+                        Update password
+                      </Button>
+                    </form>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                      This updates Auth directly. Share the new password
+                      securely.
+                    </p>
+                  </details>
                 </div>
-              </form>
+              </article>
             ))}
           </div>
         </section>

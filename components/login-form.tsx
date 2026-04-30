@@ -2,15 +2,7 @@
 
 import { type FormEvent, type ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  ShieldCheck,
-  UserRound,
-} from "lucide-react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 function Field({
@@ -23,11 +15,8 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="space-y-2.5">
-      <label
-        className="block text-sm font-semibold text-[#d8b76a] sm:text-base"
-        htmlFor={id}
-      >
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-slate-200" htmlFor={id}>
         {label}
       </label>
       {children}
@@ -36,10 +25,10 @@ function Field({
 }
 
 const fieldFrameClassName =
-  "flex h-14 w-full items-center gap-3 rounded-xl border border-[#bccbdc]/20 bg-[#091a2c] px-4 transition-colors focus-within:border-[#d8b76a]/65 focus-within:ring-2 focus-within:ring-[#d8b76a]/15 sm:h-[60px]";
+  "flex h-12 w-full items-center gap-3 rounded-md border border-slate-700 bg-slate-950 px-3 transition-colors focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-500/20 sm:h-11";
 
 const inputClassName =
-  "min-w-0 flex-1 bg-transparent text-base text-[#f4f7fa] outline-none placeholder:text-[#8796a8] disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg";
+  "min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500 disabled:cursor-not-allowed disabled:opacity-60";
 
 function getFriendlyAuthError(message: string) {
   const normalizedMessage = message.toLowerCase();
@@ -104,14 +93,11 @@ export function LoginForm() {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
-      <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit}>
+    <div className="space-y-5">
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <Field id="email" label="Email">
           <div className={fieldFrameClassName}>
-            <Mail
-              aria-hidden="true"
-              className="size-5 shrink-0 text-[#8796a8] sm:size-6"
-            />
+            <Mail aria-hidden="true" className="size-4 shrink-0 text-slate-500" />
             <input
               autoComplete="email"
               className={inputClassName}
@@ -130,10 +116,7 @@ export function LoginForm() {
 
         <Field id="password" label="Password">
           <div className={fieldFrameClassName}>
-            <Lock
-              aria-hidden="true"
-              className="size-5 shrink-0 text-[#8796a8] sm:size-6"
-            />
+            <Lock aria-hidden="true" className="size-4 shrink-0 text-slate-500" />
             <input
               autoComplete="current-password"
               className={inputClassName}
@@ -148,66 +131,38 @@ export function LoginForm() {
             />
             <button
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="flex size-10 shrink-0 items-center justify-center rounded-lg text-[#8796a8] transition-colors hover:bg-white/5 hover:text-[#d8b76a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d8b76a]/30"
+              className="flex size-8 shrink-0 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40"
               disabled={isSubmitting}
               onClick={() => setShowPassword((current) => !current)}
               type="button"
             >
               {showPassword ? (
-                <EyeOff className="size-5 sm:size-6" aria-hidden="true" />
+                <EyeOff className="size-4" aria-hidden="true" />
               ) : (
-                <Eye className="size-5 sm:size-6" aria-hidden="true" />
+                <Eye className="size-4" aria-hidden="true" />
               )}
             </button>
           </div>
         </Field>
 
         {error ? (
-          <p className="rounded-xl border border-red-200/20 bg-red-950/30 px-4 py-3 text-sm leading-6 text-red-100">
+          <p className="rounded-md border border-red-900/60 bg-red-950/40 px-3 py-2 text-sm leading-6 text-red-200">
             {error}
           </p>
         ) : null}
 
         <button
-          className="flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-[#e2c477]/30 bg-[#d8b76a] text-base font-semibold text-[#071625] shadow-none transition hover:-translate-y-px hover:bg-[#e2c477] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e2c477]/40 disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-70 sm:h-16 sm:text-lg"
+          className="flex h-12 w-full items-center justify-center rounded-md bg-white text-sm font-semibold text-slate-950 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:pointer-events-none disabled:opacity-70 sm:h-11"
           disabled={isSubmitting}
           type="submit"
         >
           {isSubmitting ? "Logging in..." : "Log in"}
-          <ArrowRight className="size-5" aria-hidden="true" />
         </button>
       </form>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 text-[#8796a8]">
-        <div className="h-px bg-white/12" />
-        <ShieldCheck className="size-7" aria-hidden="true" />
-        <div className="h-px bg-white/12" />
-      </div>
-
-      <div className="space-y-3 text-sm leading-6 text-[#aebbcc] sm:text-base sm:leading-7">
-        <p className="flex gap-4">
-          <UserRound
-            aria-hidden="true"
-            className="mt-0.5 size-5 shrink-0 text-[#d8b76a] sm:size-6"
-          />
-          <span className="min-w-0">
-            Need access? Ask a Gryphon Hub admin to add your account.
-          </span>
-        </p>
-        <p className="flex gap-4">
-          <Mail
-            aria-hidden="true"
-            className="mt-0.5 size-5 shrink-0 text-[#d8b76a] sm:size-6"
-          />
-          <span className="min-w-0">
-            For password help, contact{" "}
-            <span className="font-semibold text-[#e2c477]">
-              gryphonrailways@gmail.com
-            </span>
-            .
-          </span>
-        </p>
-      </div>
+      <p className="text-center text-sm leading-6 text-slate-400">
+        Need access? Ask a Gryphon Hub admin to add your account.
+      </p>
     </div>
   );
 }

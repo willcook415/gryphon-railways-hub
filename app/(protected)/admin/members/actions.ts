@@ -22,6 +22,7 @@ type AdminActor = {
 type ProvisionMemberInput = {
   email: string;
   fullName: string;
+  password?: string;
   role: AppRole;
   subteam: ActiveSubteam;
 };
@@ -42,6 +43,22 @@ function getString(formData: FormData, key: string) {
 function getActionRedirect(path: string, params: Record<string, string>) {
   const query = new URLSearchParams(params);
   return `${path}?${query.toString()}`;
+}
+
+function validatePassword(password: string, confirmPassword: string) {
+  if (!password) {
+    return "Enter a password.";
+  }
+
+  if (password.length < 8) {
+    return "Use a password with at least 8 characters.";
+  }
+
+  if (password !== confirmPassword) {
+    return "Passwords do not match.";
+  }
+
+  return null;
 }
 
 async function requireAdminActor(): Promise<AdminActor> {
@@ -103,6 +120,7 @@ async function findAuthUserIdByEmail(email: string) {
 async function provisionAuthUser({
   email,
   fullName,
+  password,
   role,
   subteam,
 }: ProvisionMemberInput) {
@@ -116,6 +134,7 @@ async function provisionAuthUser({
   const { data: createdUser, error: createError } =
     await admin.auth.admin.createUser({
       email,
+      password,
       email_confirm: true,
       user_metadata: userMetadata,
     });
@@ -132,11 +151,19 @@ async function provisionAuthUser({
     );
   }
 
+  const updatePayload: Parameters<
+    typeof admin.auth.admin.updateUserById
+  >[1] = {
+    email_confirm: true,
+    user_metadata: userMetadata,
+  };
+
+  if (password) {
+    updatePayload.password = password;
+  }
+
   const { data: updatedUser, error: updateError } =
-    await admin.auth.admin.updateUserById(existingUserId, {
-      email_confirm: true,
-      user_metadata: userMetadata,
-    });
+    await admin.auth.admin.updateUserById(existingUserId, updatePayload);
 
   if (updateError || !updatedUser.user) {
     throw new Error(
@@ -151,8 +178,11 @@ export async function inviteMember(formData: FormData) {
   const actor = await requireAdminActor();
   const email = getString(formData, "email").toLowerCase();
   const fullName = getString(formData, "full_name");
+  const password = getString(formData, "initial_password");
+  const confirmPassword = getString(formData, "confirm_initial_password");
   const role = formData.get("role");
   const subteam = formData.get("subteam");
+  const isActive = formData.get("is_active") === "on";
 
   if (!email || !email.includes("@")) {
     redirect(
@@ -166,6 +196,16 @@ export async function inviteMember(formData: FormData) {
     redirect(
       getActionRedirect("/admin/members", {
         error: "Enter the member's full name.",
+      })
+    );
+  }
+
+  const passwordError = validatePassword(password, confirmPassword);
+
+  if (passwordError) {
+    redirect(
+      getActionRedirect("/admin/members", {
+        error: passwordError,
       })
     );
   }
@@ -210,7 +250,13 @@ export async function inviteMember(formData: FormData) {
 
   let authUserId: string;
   try {
-    authUserId = await provisionAuthUser({ email, fullName, role, subteam });
+    authUserId = await provisionAuthUser({
+      email,
+      fullName,
+      password,
+      role,
+      subteam,
+    });
   } catch (error) {
     await admin
       .from("member_invitations")
@@ -240,7 +286,7 @@ export async function inviteMember(formData: FormData) {
     full_name: fullName,
     role,
     subteam,
-    is_active: true,
+    is_active: isActive,
   });
 
   if (profileError) {
@@ -281,7 +327,8 @@ export async function inviteMember(formData: FormData) {
   revalidatePath("/admin/members");
   redirect(
     getActionRedirect("/admin/members", {
-      message: `${email} has been provisioned in Gryphon Hub.`,
+      message:
+        "Member account created. Share the initial password with them securely.",
     })
   );
 }
@@ -324,6 +371,43 @@ export async function updateMember(formData: FormData) {
   redirect(
     getActionRedirect("/admin/members", {
       message: "Member updated.",
+    })
+  );
+}
+
+export async function setMemberPassword(formData: FormData) {
+  await requireAdminActor();
+
+  const id = getString(formData, "id");
+  const password = getString(formData, "new_password");
+  const confirmPassword = getString(formData, "confirm_new_password");
+  const passwordError = validatePassword(password, confirmPassword);
+
+  if (!id || passwordError) {
+    redirect(
+      getActionRedirect("/admin/members", {
+        error: passwordError ?? "Choose a valid member.",
+      })
+    );
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.updateUserById(id, {
+    password,
+  });
+
+  if (error) {
+    redirect(
+      getActionRedirect("/admin/members", {
+        error: error.message,
+      })
+    );
+  }
+
+  revalidatePath("/admin/members");
+  redirect(
+    getActionRedirect("/admin/members", {
+      message: "Password updated. Share it with the member securely.",
     })
   );
 }
