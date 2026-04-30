@@ -2,7 +2,7 @@
 
 import { type FormEvent, type ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 function Field({
@@ -156,7 +156,17 @@ export function LoginForm() {
           disabled={isSubmitting}
           type="submit"
         >
-          {isSubmitting ? "Logging in..." : "Log in"}
+          {isSubmitting ? (
+            <>
+              <LoaderCircle
+                className="mr-2 size-4 animate-spin motion-reduce:animate-none"
+                aria-hidden="true"
+              />
+              Logging in...
+            </>
+          ) : (
+            "Log in"
+          )}
         </button>
       </form>
 

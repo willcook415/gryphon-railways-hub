@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "Gryphon Hub",
   title: "Gryphon Hub",
   description: "Internal operations platform for Gryphon Railways.",
   manifest: "/manifest.webmanifest",

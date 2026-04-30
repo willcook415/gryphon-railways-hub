@@ -100,7 +100,7 @@ export function AppShell({
   return (
     <div className="min-h-dvh bg-slate-950 text-slate-950">
       <div className="mx-auto flex min-h-dvh w-full max-w-[1600px] bg-slate-100 lg:bg-white">
-        <aside className="hidden w-72 shrink-0 flex-col border-r border-slate-800 bg-[linear-gradient(180deg,#06142f_0%,#08111f_55%,#020617_100%)] px-4 py-5 text-white lg:flex">
+        <aside className="hidden w-72 shrink-0 flex-col border-r border-slate-800 bg-slate-950 px-4 py-5 text-white lg:flex">
           <Link className="mb-7 flex items-center gap-3 px-2" href="/dashboard">
             <span className="flex size-12 items-center justify-center rounded-lg border border-white/10 bg-white p-1.5 shadow-sm">
               <Image

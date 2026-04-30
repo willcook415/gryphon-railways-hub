@@ -128,3 +128,57 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .animate-card-in {
+    animation: gryphon-card-in 180ms ease-out both;
+  }
+
+  .skeleton-surface {
+    position: relative;
+    overflow: hidden;
+    background: rgb(226 232 240);
+  }
+
+  .skeleton-surface::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.62),
+      transparent
+    );
+    animation: gryphon-skeleton 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes gryphon-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gryphon-skeleton {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-in {
+    animation: none;
+  }
+
+  .skeleton-surface::after {
+    animation: none;
+  }
+}

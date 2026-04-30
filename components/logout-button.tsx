@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { LogOut } from "lucide-react";
+import { LoaderCircle, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -38,7 +38,14 @@ export function LogoutButton() {
         type="button"
         variant="outline"
       >
-        <LogOut aria-hidden="true" />
+        {isSigningOut ? (
+          <LoaderCircle
+            className="size-4 animate-spin motion-reduce:animate-none"
+            aria-hidden="true"
+          />
+        ) : (
+          <LogOut aria-hidden="true" />
+        )}
         {isSigningOut ? "Signing out..." : "Log out"}
       </Button>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

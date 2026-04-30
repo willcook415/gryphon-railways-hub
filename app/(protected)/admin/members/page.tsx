@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -285,7 +286,9 @@ export default async function AdminMembersPage({
             </label>
 
             <div className="sm:col-span-2">
-              <Button type="submit">Create member</Button>
+              <PendingSubmitButton pendingText="Creating...">
+                Create member
+              </PendingSubmitButton>
             </div>
           </form>
         </section>
@@ -351,9 +354,12 @@ export default async function AdminMembersPage({
                         Active
                       </label>
 
-                      <Button type="submit" variant="outline">
+                      <PendingSubmitButton
+                        pendingText="Saving..."
+                        variant="outline"
+                      >
                         Save
-                      </Button>
+                      </PendingSubmitButton>
                     </div>
                   </form>
 
@@ -390,9 +396,12 @@ export default async function AdminMembersPage({
                           type="password"
                         />
                       </label>
-                      <Button type="submit" variant="outline">
+                      <PendingSubmitButton
+                        pendingText="Updating..."
+                        variant="outline"
+                      >
                         Update password
-                      </Button>
+                      </PendingSubmitButton>
                     </form>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
                       This updates Auth directly. Share the new password
