@@ -4,10 +4,32 @@ import { useEffect } from "react";
 
 const SERVICE_WORKER_URL = "/sw.js";
 const UPDATE_INTERVAL_MS = 60 * 60 * 1000;
+const APP_CACHE_PREFIX = "gryphon-hub-";
+
+async function clearDevelopmentServiceWorkers() {
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(
+    registrations.map((registration) => registration.unregister())
+  );
+
+  if ("caches" in window) {
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames
+        .filter((cacheName) => cacheName.startsWith(APP_CACHE_PREFIX))
+        .map((cacheName) => caches.delete(cacheName))
+    );
+  }
+}
 
 export function ServiceWorkerRegistration() {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) {
+      return;
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      void clearDevelopmentServiceWorkers();
       return;
     }
 

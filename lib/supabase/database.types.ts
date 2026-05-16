@@ -875,6 +875,7 @@ export type Database = {
           preferred_name: string | null
           role: Database["public"]["Enums"]["app_role"]
           subteam: Database["public"]["Enums"]["app_subteam"] | null
+          team_title: string | null
           updated_at: string
         }
         Insert: {
@@ -889,6 +890,7 @@ export type Database = {
           preferred_name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           subteam?: Database["public"]["Enums"]["app_subteam"] | null
+          team_title?: string | null
           updated_at?: string
         }
         Update: {
@@ -903,6 +905,7 @@ export type Database = {
           preferred_name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           subteam?: Database["public"]["Enums"]["app_subteam"] | null
+          team_title?: string | null
           updated_at?: string
         }
         Relationships: []

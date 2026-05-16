@@ -18,7 +18,7 @@ export default function ChecklistsPage() {
         },
         {
           title: "Assigned items",
-          description: "Subteam ownership and blocked items.",
+          description: "Sub-team ownership and blocked items.",
         },
       ]}
     />

@@ -2,17 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { Enums } from "@/lib/supabase/database.types";
-import {
-  getSubteamLabel,
-  isActiveSubteam,
-  type ActiveSubteam,
-} from "@/lib/team-options";
-import { sendAnnouncementPush } from "@/lib/notifications/send-announcement-push";
+import type { Enums, Json } from "@/lib/supabase/database.types";
+import { ALL_SUBTEAM_OPTIONS } from "@/lib/team-options";
 
+type AppSubteam = Enums<"app_subteam">;
 type PriorityLevel = Enums<"priority_level">;
+type ActionStatus = "idle" | "success" | "error";
+
+export type CreateAnnouncementState = {
+  status: ActionStatus;
+  message: string | null;
+};
 
 const PRIORITIES = [
   "low",
@@ -21,18 +22,47 @@ const PRIORITIES = [
   "critical",
 ] as const satisfies readonly PriorityLevel[];
 
+const ANNOUNCEMENT_SUBTEAMS = ALL_SUBTEAM_OPTIONS.map((option) => option.value);
+
 function getString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
 }
 
-function getDashboardRedirect(params: Record<string, string>) {
-  const query = new URLSearchParams(params);
-  return `/dashboard?${query.toString()}`;
-}
-
 function isPriority(value: string): value is PriorityLevel {
   return (PRIORITIES as readonly string[]).includes(value);
+}
+
+function isAnnouncementSubteam(value: string): value is AppSubteam {
+  return (ANNOUNCEMENT_SUBTEAMS as readonly string[]).includes(value);
+}
+
+function parseExpiry(value: string) {
+  if (!value) {
+    return { value: null, error: null };
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return { value: null, error: "Choose a valid expiry date and time." };
+  }
+
+  return { value: date.toISOString(), error: null };
+}
+
+function getInsertErrorMessage(message: string | undefined) {
+  const normalized = message?.toLowerCase() ?? "";
+
+  if (
+    normalized.includes("row-level security") ||
+    normalized.includes("permission") ||
+    normalized.includes("not authorized") ||
+    normalized.includes("violates")
+  ) {
+    return "You do not have permission to create announcements.";
+  }
+
+  return message ?? "Announcement could not be posted.";
 }
 
 async function requireAnnouncementActor() {
@@ -51,44 +81,63 @@ async function requireAnnouncementActor() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "admin" && profile?.role !== "exec") {
-    redirect("/dashboard");
+  if (
+    profile?.role !== "admin" &&
+    profile?.role !== "exec" &&
+    profile?.role !== "team_lead"
+  ) {
+    return null;
   }
 
   return user;
 }
 
-export async function createAnnouncement(formData: FormData) {
+export async function createAnnouncement(
+  _previousState: CreateAnnouncementState,
+  formData: FormData
+): Promise<CreateAnnouncementState> {
   const actor = await requireAnnouncementActor();
+  if (!actor) {
+    return {
+      status: "error",
+      message: "You do not have permission to create announcements.",
+    };
+  }
+
   const title = getString(formData, "title");
   const body = getString(formData, "body");
   const priorityValue = getString(formData, "priority");
   const targetValue = getString(formData, "target_subteam");
   const pinned = formData.get("pinned") === "on";
+  const expiry = parseExpiry(getString(formData, "expires_at"));
 
   if (!title) {
-    redirect(getDashboardRedirect({ error: "Enter an announcement title." }));
+    return { status: "error", message: "Enter an announcement title." };
   }
 
   if (!body) {
-    redirect(getDashboardRedirect({ error: "Enter announcement details." }));
+    return { status: "error", message: "Enter announcement details." };
   }
 
   if (!isPriority(priorityValue)) {
-    redirect(getDashboardRedirect({ error: "Choose a valid priority." }));
+    return { status: "error", message: "Choose a valid priority." };
   }
 
-  let targetSubteam: ActiveSubteam | null = null;
+  if (expiry.error) {
+    return { status: "error", message: expiry.error };
+  }
+
+  let targetSubteam: AppSubteam | null = null;
   if (targetValue !== "all") {
-    if (!isActiveSubteam(targetValue)) {
-      redirect(getDashboardRedirect({ error: "Choose a valid audience." }));
+    if (!isAnnouncementSubteam(targetValue)) {
+      return { status: "error", message: "Choose a valid audience." };
     }
 
     targetSubteam = targetValue;
   }
 
-  const admin = createAdminClient();
-  const { data: announcement, error } = await admin
+  const supabase = await createClient();
+  const { data: announcement, error } = await supabase
     .from("announcements")
     .insert({
       title,
@@ -96,35 +145,39 @@ export async function createAnnouncement(formData: FormData) {
       priority: priorityValue,
       target_subteam: targetSubteam,
       pinned,
+      expires_at: expiry.value,
       created_by: actor.id,
     })
     .select("id")
     .single();
 
   if (error || !announcement) {
-    redirect(
-      getDashboardRedirect({
-        error: error?.message ?? "Announcement could not be posted.",
-      })
-    );
+    return {
+      status: "error",
+      message: getInsertErrorMessage(error?.message),
+    };
   }
 
-  const targetLabel = targetSubteam ? getSubteamLabel(targetSubteam) : "All team";
-  const pushResult = await sendAnnouncementPush({
-    announcementId: announcement.id,
-    actorId: actor.id,
+  const payload = {
     title,
     priority: priorityValue,
-    targetLabel,
-    targetSubteam,
+    pinned,
+    target_subteam: targetSubteam,
+  } satisfies Json;
+
+  await supabase.from("notification_events").insert({
+    event_type: "announcement_created",
+    actor_id: actor.id,
+    target_subteam: targetSubteam,
+    entity_table: "announcements",
+    entity_id: announcement.id,
+    payload,
   });
 
   revalidatePath("/dashboard");
 
-  redirect(
-    getDashboardRedirect({
-      message: "Announcement posted.",
-      ...(pushResult.warning ? { warning: pushResult.warning } : {}),
-    })
-  );
+  return {
+    status: "success",
+    message: "Announcement posted.",
+  };
 }

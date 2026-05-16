@@ -6,11 +6,17 @@ import type { Database } from "@/lib/supabase/database.types";
 
 type Profile = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
-  "email" | "full_name" | "preferred_name" | "role" | "subteam" | "is_active"
+  | "email"
+  | "full_name"
+  | "preferred_name"
+  | "role"
+  | "subteam"
+  | "team_title"
+  | "is_active"
 >;
 
 const PROFILE_SELECT =
-  "email, full_name, preferred_name, role, subteam, is_active";
+  "email, full_name, preferred_name, role, subteam, team_title, is_active";
 
 export default async function ProtectedLayout({
   children,

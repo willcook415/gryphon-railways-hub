@@ -173,7 +173,7 @@ export async function sendAnnouncementPush(
 
   const basePayload = {
     app_id: appId,
-    headings: { en: "Gryphon Hub announcement" },
+    headings: { en: "Gryphon Railways Hub announcement" },
     contents: { en: input.title },
     data: {
       url: "/dashboard",

@@ -14,6 +14,10 @@ import {
   getSubteamLabel,
   isActiveSubteam,
 } from "@/lib/team-options";
+import {
+  getMemberDisplayName,
+  getMemberDisplayTitle,
+} from "@/lib/member-display";
 import { inviteMember, setMemberPassword, updateMember } from "./actions";
 
 type AppRole = Enums<"app_role">;
@@ -31,6 +35,7 @@ type Profile = Pick<
   | "preferred_name"
   | "role"
   | "subteam"
+  | "team_title"
   | "is_active"
   | "created_at"
   | "updated_at"
@@ -89,7 +94,7 @@ function StatusBadge({ status }: { status: MemberInvitationStatus }) {
 function SelectRole({ defaultValue }: { defaultValue: AppRole }) {
   return (
     <select
-      className="h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+      className="h-9 rounded-md border border-input bg-card px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
       defaultValue={defaultValue}
       name="role"
     >
@@ -111,7 +116,7 @@ function SelectSubteam({ defaultValue }: { defaultValue: AppSubteam | null }) {
   return (
     <div className="space-y-2">
       <select
-        className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+        className="h-9 w-full rounded-md border border-input bg-card px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
         defaultValue={activeDefault}
         name="subteam"
       >
@@ -160,26 +165,28 @@ export default async function AdminMembersPage({
   const params = await searchParams;
   const admin = createAdminClient();
 
-  const [{ data: members, error: membersError }, { data: invitations, error: invitationsError }] =
-    await Promise.all([
-      admin
-        .from("profiles")
-        .select(
-          "id, email, full_name, preferred_name, role, subteam, is_active, created_at, updated_at"
-        )
-        .order("full_name", { ascending: true }),
-      admin
-        .from("member_invitations")
-        .select("*")
-        .in("status", MEMBER_INVITATION_STATUSES)
-        .order("created_at", { ascending: false }),
-    ]);
+  const [
+    { data: members, error: membersError },
+    { data: invitations, error: invitationsError },
+  ] = await Promise.all([
+    admin
+      .from("profiles")
+      .select(
+        "id, email, full_name, preferred_name, role, subteam, team_title, is_active, created_at, updated_at"
+      )
+      .order("full_name", { ascending: true }),
+    admin
+      .from("member_invitations")
+      .select("*")
+      .in("status", MEMBER_INVITATION_STATUSES)
+      .order("created_at", { ascending: false }),
+  ]);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <header className="rounded-lg border bg-background p-5 shadow-sm">
+        <header className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-sm font-medium text-muted-foreground">
-            Gryphon Hub Admin
+            Gryphon Railways Hub Admin
           </p>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -187,7 +194,7 @@ export default async function AdminMembersPage({
                 Member management
               </h1>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Create member accounts and manage profile access.
+                Create member accounts, public titles, and permission access.
               </p>
             </div>
             <Button asChild variant="outline">
@@ -208,12 +215,12 @@ export default async function AdminMembersPage({
           </div>
         ) : null}
 
-        <section className="rounded-lg border bg-background p-5 shadow-sm">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4">
             <h2 className="text-lg font-semibold">Add a member</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Creates or updates the member account profile for Gryphon Hub
-              access. Share the initial password securely with the member.
+              Creates or updates the member account profile for Gryphon Railways
+              Hub access. Share the initial password securely with the member.
             </p>
           </div>
 
@@ -221,7 +228,7 @@ export default async function AdminMembersPage({
             <label className="space-y-2 text-sm font-medium">
               Email
               <input
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
                 name="email"
                 placeholder="user@leeds.ac.uk"
                 required
@@ -232,7 +239,7 @@ export default async function AdminMembersPage({
             <label className="space-y-2 text-sm font-medium">
               Full name
               <input
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
                 name="full_name"
                 placeholder="Alex Taylor"
                 required
@@ -240,10 +247,19 @@ export default async function AdminMembersPage({
             </label>
 
             <label className="space-y-2 text-sm font-medium">
+              Team title
+              <input
+                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
+                name="team_title"
+                placeholder="Team Principal"
+              />
+            </label>
+
+            <label className="space-y-2 text-sm font-medium">
               Initial password
               <input
                 autoComplete="new-password"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
                 minLength={8}
                 name="initial_password"
                 placeholder="Minimum 8 characters"
@@ -256,7 +272,7 @@ export default async function AdminMembersPage({
               Confirm initial password
               <input
                 autoComplete="new-password"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
                 minLength={8}
                 name="confirm_initial_password"
                 placeholder="Repeat password"
@@ -266,18 +282,18 @@ export default async function AdminMembersPage({
             </label>
 
             <label className="space-y-2 text-sm font-medium">
-              Role
+              Access level
               <SelectRole defaultValue="member" />
             </label>
 
             <label className="space-y-2 text-sm font-medium">
-              Subteam
+              Sub-team
               <SelectSubteam defaultValue={DEFAULT_ACTIVE_SUBTEAM} />
             </label>
 
             <label className="flex h-10 items-center gap-2 text-sm font-medium">
               <input
-                className="size-4 rounded border-input"
+                className="size-4 rounded border-input accent-primary"
                 defaultChecked
                 name="is_active"
                 type="checkbox"
@@ -293,12 +309,12 @@ export default async function AdminMembersPage({
           </form>
         </section>
 
-        <section className="rounded-lg border bg-background p-5 shadow-sm">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold">Current members</h2>
               <p className="text-sm text-muted-foreground">
-                Profiles from the Gryphon Hub member directory.
+                Profiles from the Gryphon Railways Hub member directory.
               </p>
             </div>
             <span className="text-sm text-muted-foreground">
@@ -314,16 +330,19 @@ export default async function AdminMembersPage({
 
           <div className="grid gap-3">
             {(members as Profile[] | null)?.map((member) => (
-              <article className="rounded-md border p-4" key={member.id}>
+              <article
+                className="rounded-lg border border-border bg-muted/20 p-4"
+                key={member.id}
+              >
                 <div className="flex flex-col gap-4">
                   <div className="min-w-0">
                     <h3 className="truncate text-sm font-semibold">
-                      {member.full_name ??
-                        member.preferred_name ??
-                        member.email ??
-                        "Unnamed member"}
+                      {getMemberDisplayName(member)}
                     </h3>
-                    <p className="mt-1 break-words text-sm text-muted-foreground">
+                    <p className="mt-1 break-words text-sm font-medium text-primary">
+                      {getMemberDisplayTitle(member)}
+                    </p>
+                    <p className="mt-1 break-words text-xs text-muted-foreground">
                       {member.email ?? "No email"}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -333,20 +352,30 @@ export default async function AdminMembersPage({
 
                   <form action={updateMember}>
                     <input name="id" type="hidden" value={member.id} />
-                    <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
+                    <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[1.3fr_1fr_1fr_auto_auto] lg:items-end">
                       <label className="space-y-2 text-sm font-medium">
-                        Role
+                        Team title
+                        <input
+                          className="flex h-9 w-full rounded-md border border-input bg-card px-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
+                          defaultValue={member.team_title ?? ""}
+                          name="team_title"
+                          placeholder="Team Member"
+                        />
+                      </label>
+
+                      <label className="space-y-2 text-sm font-medium">
+                        Access level
                         <SelectRole defaultValue={member.role} />
                       </label>
 
                       <label className="space-y-2 text-sm font-medium">
-                        Subteam
+                        Sub-team
                         <SelectSubteam defaultValue={member.subteam} />
                       </label>
 
                       <label className="flex h-9 items-center gap-2 text-sm font-medium">
                         <input
-                          className="size-4 rounded border-input"
+                          className="size-4 rounded border-input accent-primary"
                           defaultChecked={member.is_active}
                           name="is_active"
                           type="checkbox"
@@ -363,7 +392,7 @@ export default async function AdminMembersPage({
                     </div>
                   </form>
 
-                  <details className="rounded-md border bg-muted/30 p-3">
+                  <details className="rounded-lg border border-border bg-card p-3">
                     <summary className="cursor-pointer text-sm font-medium">
                       Set new password
                     </summary>
@@ -376,7 +405,7 @@ export default async function AdminMembersPage({
                         New password
                         <input
                           autoComplete="new-password"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                          className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
                           minLength={8}
                           name="new_password"
                           placeholder="Minimum 8 characters"
@@ -388,7 +417,7 @@ export default async function AdminMembersPage({
                         Confirm password
                         <input
                           autoComplete="new-password"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                          className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/15"
                           minLength={8}
                           name="confirm_new_password"
                           placeholder="Repeat password"
@@ -414,7 +443,7 @@ export default async function AdminMembersPage({
           </div>
         </section>
 
-        <section className="rounded-lg border bg-background p-5 shadow-sm">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold">Invitations</h2>
@@ -435,7 +464,10 @@ export default async function AdminMembersPage({
 
           <div className="grid gap-3">
             {(invitations as Invitation[] | null)?.map((invitation) => (
-              <article className="rounded-md border p-4" key={invitation.id}>
+              <article
+                className="rounded-lg border border-border bg-muted/20 p-4"
+                key={invitation.id}
+              >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <h3 className="break-words text-sm font-semibold">
@@ -451,13 +483,13 @@ export default async function AdminMembersPage({
                 <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                   <div>
                     <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Role
+                      Access level
                     </dt>
                     <dd className="mt-1">{formatValue(invitation.role)}</dd>
                   </div>
                   <div>
                     <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Subteam
+                      Sub-team
                     </dt>
                     <dd className="mt-1">
                       {getSubteamLabel(invitation.subteam)}

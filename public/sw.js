@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gryphon-hub-static-v1";
+const CACHE_VERSION = "gryphon-hub-static-v2";
 const PRECACHE_URLS = [
   "/icons/apple-touch-icon.png",
   "/icons/icon-192.png",
@@ -38,7 +38,6 @@ function isStaticAssetRequest(requestUrl) {
   }
 
   return (
-    requestUrl.pathname.startsWith("/_next/static/") ||
     requestUrl.pathname.startsWith("/icons/") ||
     requestUrl.pathname === "/gr-logo.png" ||
     requestUrl.pathname === "/manifest.webmanifest"

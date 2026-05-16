@@ -2,25 +2,24 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { PageHeader } from "@/components/feature-page";
 import { getSubteamLabel } from "@/lib/team-options";
+import {
+  getMemberDisplayName,
+  getMemberDisplayTitle,
+} from "@/lib/member-display";
 
 type Profile = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
-  "email" | "full_name" | "preferred_name" | "role" | "subteam" | "is_active"
+  | "email"
+  | "full_name"
+  | "preferred_name"
+  | "role"
+  | "subteam"
+  | "team_title"
+  | "is_active"
 >;
 
 const PROFILE_SELECT =
-  "email, full_name, preferred_name, role, subteam, is_active";
-
-function formatValue(value: string | null | undefined) {
-  if (!value) {
-    return "Not set";
-  }
-
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
+  "email, full_name, preferred_name, role, subteam, team_title, is_active";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -33,12 +32,13 @@ export default async function ProfilePage() {
     .eq("id", user?.id ?? "")
     .maybeSingle<Profile>();
 
+  const displayName = getMemberDisplayName(profile, user?.email ?? null);
+  const displayTitle = getMemberDisplayTitle(profile);
   const rows = [
+    ["Name", displayName],
+    ["Team title", displayTitle],
+    ["Sub-team", getSubteamLabel(profile?.subteam)],
     ["Email", profile?.email ?? user?.email ?? null],
-    ["Full name", profile?.full_name ?? null],
-    ["Preferred name", profile?.preferred_name ?? null],
-    ["Role", formatValue(profile?.role)],
-    ["Subteam", getSubteamLabel(profile?.subteam)],
     ["Status", profile?.is_active ? "Active" : "Inactive"],
   ];
 
@@ -47,17 +47,17 @@ export default async function ProfilePage() {
       <PageHeader
         eyebrow="Account"
         title="Profile"
-        description="Your Gryphon Hub identity and access context. Admins can adjust roles and subteams from member management."
+        description="Your Gryphon Railways Hub identity and team context. Admins can update public titles and team membership from member management."
       />
 
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
         <dl className="grid gap-3 sm:grid-cols-2">
           {rows.map(([label, value]) => (
-            <div className="rounded-md border border-slate-200 p-4" key={label}>
-              <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            <div className="rounded-lg border border-border bg-muted/25 p-4" key={label}>
+              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {label}
               </dt>
-              <dd className="mt-1 break-words text-sm font-medium text-slate-950">
+              <dd className="mt-1 break-words text-sm font-medium text-foreground">
                 {value ?? "Not set"}
               </dd>
             </div>

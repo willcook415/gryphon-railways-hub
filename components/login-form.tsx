@@ -16,7 +16,7 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-slate-200" htmlFor={id}>
+      <label className="block text-sm font-medium text-foreground" htmlFor={id}>
         {label}
       </label>
       {children}
@@ -25,10 +25,10 @@ function Field({
 }
 
 const fieldFrameClassName =
-  "flex h-12 w-full items-center gap-3 rounded-md border border-slate-700 bg-slate-950 px-3 transition-colors focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-500/20 sm:h-11";
+  "flex h-12 w-full items-center gap-3 rounded-md border border-input bg-card px-3 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/15 sm:h-11";
 
 const inputClassName =
-  "min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500 disabled:cursor-not-allowed disabled:opacity-60";
+  "min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60";
 
 function getFriendlyAuthError(message: string) {
   const normalizedMessage = message.toLowerCase();
@@ -37,7 +37,7 @@ function getFriendlyAuthError(message: string) {
     normalizedMessage.includes("invalid login credentials") ||
     normalizedMessage.includes("email not confirmed")
   ) {
-    return "Could not log in. Check your email and password, or ask a Gryphon Hub admin to add your account.";
+    return "Could not log in. Check your email and password, or ask a Gryphon Railways Hub admin to add your account.";
   }
 
   return message;
@@ -97,7 +97,7 @@ export function LoginForm() {
       <form className="space-y-4" onSubmit={handleSubmit}>
         <Field id="email" label="Email">
           <div className={fieldFrameClassName}>
-            <Mail aria-hidden="true" className="size-4 shrink-0 text-slate-500" />
+            <Mail aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
             <input
               autoComplete="email"
               className={inputClassName}
@@ -116,7 +116,7 @@ export function LoginForm() {
 
         <Field id="password" label="Password">
           <div className={fieldFrameClassName}>
-            <Lock aria-hidden="true" className="size-4 shrink-0 text-slate-500" />
+            <Lock aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
             <input
               autoComplete="current-password"
               className={inputClassName}
@@ -131,7 +131,7 @@ export function LoginForm() {
             />
             <button
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="flex size-8 shrink-0 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40"
+              className="flex size-8 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
               disabled={isSubmitting}
               onClick={() => setShowPassword((current) => !current)}
               type="button"
@@ -146,13 +146,13 @@ export function LoginForm() {
         </Field>
 
         {error ? (
-          <p className="rounded-md border border-red-900/60 bg-red-950/40 px-3 py-2 text-sm leading-6 text-red-200">
+          <p className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm leading-6 text-destructive">
             {error}
           </p>
         ) : null}
 
         <button
-          className="flex h-12 w-full items-center justify-center rounded-md bg-white text-sm font-semibold text-slate-950 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:pointer-events-none disabled:opacity-70 sm:h-11"
+          className="flex h-12 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-70 sm:h-11"
           disabled={isSubmitting}
           type="submit"
         >
@@ -170,8 +170,8 @@ export function LoginForm() {
         </button>
       </form>
 
-      <p className="text-center text-sm leading-6 text-slate-400">
-        Need access? Ask a Gryphon Hub admin to add your account.
+      <p className="text-center text-sm leading-6 text-muted-foreground">
+        Need access? Ask a Gryphon Railways Hub admin to add your account.
       </p>
     </div>
   );

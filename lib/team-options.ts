@@ -2,6 +2,20 @@ import type { Enums } from "@/lib/supabase/database.types";
 
 export type AppSubteam = Enums<"app_subteam">;
 
+export const ALL_SUBTEAM_OPTIONS = [
+  { value: "structures", label: "Structures" },
+  { value: "powertrain", label: "Powertrain" },
+  { value: "vehicle_systems", label: "Vehicle Systems" },
+  { value: "manufacturing_testing", label: "Manufacturing & Testing" },
+  { value: "systems_engineering", label: "Systems Engineering" },
+  { value: "business_ops", label: "Business Operations" },
+  { value: "executive_board", label: "Executive Board" },
+  { value: "mechanical_design", label: "Mechanical Design" },
+  { value: "sponsorship_finance", label: "Sponsorship & Finance" },
+  { value: "marketing", label: "Marketing" },
+  { value: "welfare_inclusion", label: "Welfare & Inclusion" },
+] as const satisfies ReadonlyArray<{ value: AppSubteam; label: string }>;
+
 export const ACTIVE_SUBTEAM_OPTIONS = [
   { value: "executive_board", label: "Executive Board" },
   { value: "mechanical_design", label: "Mechanical Design" },
@@ -33,7 +47,7 @@ export function getSubteamLabel(value: string | null | undefined) {
   }
 
   return (
-    ACTIVE_SUBTEAM_OPTIONS.find((option) => option.value === value)?.label ??
+    ALL_SUBTEAM_OPTIONS.find((option) => option.value === value)?.label ??
     "Legacy team"
   );
 }

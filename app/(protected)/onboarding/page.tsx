@@ -17,7 +17,7 @@ export default function OnboardingPage() {
           description: "Required documents and acknowledgement status.",
         },
         {
-          title: "Subteam handoff",
+          title: "Sub-team handoff",
           description: "Ownership notes for leads and mentors.",
         },
       ]}

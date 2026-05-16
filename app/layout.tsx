@@ -17,14 +17,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  applicationName: "Gryphon Hub",
-  title: "Gryphon Hub",
+  applicationName: "Gryphon Railways",
+  title: "Gryphon Railways",
   description: "Internal operations platform for Gryphon Railways.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Gryphon Hub",
+    statusBarStyle: "default",
+    title: "Gryphon Railways",
   },
   icons: {
     icon: [
@@ -41,13 +41,11 @@ export const metadata: Metadata = {
   },
   other: {
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "Gryphon Hub",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#020617",
+  themeColor: "#f7f8fa",
 };
 
 export default function RootLayout({
@@ -67,7 +65,7 @@ export default function RootLayout({
         inter.variable
       )}
     >
-      <body className="flex min-h-full flex-col overflow-x-hidden bg-slate-950">
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-background">
         <ServiceWorkerRegistration />
         {children}
       </body>

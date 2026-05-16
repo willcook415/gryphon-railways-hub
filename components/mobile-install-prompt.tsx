@@ -55,18 +55,18 @@ export function MobileInstallPrompt() {
   }
 
   return (
-    <aside className="w-full max-w-md rounded-lg border border-slate-800 bg-slate-900 p-4 text-slate-100 shadow-lg shadow-black/10 md:hidden">
+    <aside className="w-full max-w-md rounded-xl border border-border bg-card p-4 text-foreground shadow-[0_18px_45px_rgba(15,23,42,0.10)] md:hidden">
       <div className="flex items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-slate-800 text-slate-200">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent text-primary">
           <Download className="size-4" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold">Install Gryphon Hub</h2>
-          <p className="mt-1 text-sm leading-5 text-slate-400">
-            For the best mobile experience, add Gryphon Hub to your home
+          <h2 className="text-sm font-semibold">Install Gryphon Railways Hub</h2>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            For the best mobile experience, add Gryphon Railways Hub to your home
             screen.
           </p>
-          <p className="mt-2 text-sm leading-5 text-slate-300">
+          <p className="mt-2 text-sm leading-5 text-foreground">
             {platform === "ios"
               ? "Tap Share, then Add to Home Screen."
               : "Open the browser menu, then tap Install app."}
@@ -74,7 +74,7 @@ export function MobileInstallPrompt() {
         </div>
         <button
           aria-label="Dismiss install guidance"
-          className="flex size-8 shrink-0 items-center justify-center rounded text-slate-500 transition hover:bg-slate-800 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/40"
+          className="flex size-8 shrink-0 items-center justify-center rounded text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           onClick={dismiss}
           type="button"
         >

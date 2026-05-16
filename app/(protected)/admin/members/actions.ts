@@ -22,6 +22,7 @@ type AdminActor = {
 type ProvisionMemberInput = {
   email: string;
   fullName: string;
+  teamTitle: string | null;
   password?: string;
   role: AppRole;
   subteam: ActiveSubteam;
@@ -120,6 +121,7 @@ async function findAuthUserIdByEmail(email: string) {
 async function provisionAuthUser({
   email,
   fullName,
+  teamTitle,
   password,
   role,
   subteam,
@@ -127,6 +129,7 @@ async function provisionAuthUser({
   const admin = createAdminClient();
   const userMetadata = {
     full_name: fullName,
+    team_title: teamTitle,
     role,
     subteam,
   };
@@ -178,6 +181,7 @@ export async function inviteMember(formData: FormData) {
   const actor = await requireAdminActor();
   const email = getString(formData, "email").toLowerCase();
   const fullName = getString(formData, "full_name");
+  const teamTitle = getString(formData, "team_title") || null;
   const password = getString(formData, "initial_password");
   const confirmPassword = getString(formData, "confirm_initial_password");
   const role = formData.get("role");
@@ -213,7 +217,7 @@ export async function inviteMember(formData: FormData) {
   if (!isRole(role) || !isSubteam(subteam)) {
     redirect(
       getActionRedirect("/admin/members", {
-        error: "Choose a valid role and subteam.",
+        error: "Choose a valid access level and sub-team.",
       })
     );
   }
@@ -253,6 +257,7 @@ export async function inviteMember(formData: FormData) {
     authUserId = await provisionAuthUser({
       email,
       fullName,
+      teamTitle,
       password,
       role,
       subteam,
@@ -284,6 +289,7 @@ export async function inviteMember(formData: FormData) {
     id: authUserId,
     email,
     full_name: fullName,
+    team_title: teamTitle,
     role,
     subteam,
     is_active: isActive,
@@ -337,6 +343,7 @@ export async function updateMember(formData: FormData) {
   await requireAdminActor();
 
   const id = getString(formData, "id");
+  const teamTitle = getString(formData, "team_title") || null;
   const role = formData.get("role");
   const subteam = formData.get("subteam");
   const isActive = formData.get("is_active") === "on";
@@ -344,7 +351,7 @@ export async function updateMember(formData: FormData) {
   if (!id || !isRole(role) || !isSubteam(subteam)) {
     redirect(
       getActionRedirect("/admin/members", {
-        error: "Choose a valid member, role, and subteam.",
+        error: "Choose a valid member, access level, and sub-team.",
       })
     );
   }
@@ -355,6 +362,7 @@ export async function updateMember(formData: FormData) {
     .update({
       role,
       subteam,
+      team_title: teamTitle,
       is_active: isActive,
     })
     .eq("id", id);
