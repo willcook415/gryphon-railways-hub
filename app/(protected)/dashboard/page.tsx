@@ -76,37 +76,6 @@ const priorityBadgeStyles: Record<PriorityLevel, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",
 };
 
-const metricCards = [
-  {
-    title: "Open critical faults",
-    value: "0",
-    description: "High-priority issues blocking operations will appear here.",
-    icon: AlertTriangle,
-    tone: "text-red-700 bg-red-50 border-red-100",
-  },
-  {
-    title: "Upcoming tests",
-    value: "0",
-    description: "Scheduled track, bench, and systems tests.",
-    icon: CalendarDays,
-    tone: "text-primary bg-accent border-ring/15",
-  },
-  {
-    title: "Safety acknowledgements",
-    value: "0",
-    description: "Documents requiring member confirmation.",
-    icon: FileCheck2,
-    tone: "text-amber-700 bg-amber-50 border-amber-200",
-  },
-  {
-    title: "Competition readiness",
-    value: "Setup",
-    description: "Readiness checklist status will be tracked here.",
-    icon: Gauge,
-    tone: "text-emerald-700 bg-emerald-50 border-emerald-200",
-  },
-];
-
 const baseQuickActions = [
   {
     label: "Report a fault",
@@ -221,6 +190,12 @@ export default async function DashboardPage({
     )
   );
 
+  const { count: openCriticalFaultsCount } = await supabase
+    .from("faults")
+    .select("id", { count: "exact", head: true })
+    .not("status", "in", "(verified_closed,rejected)")
+    .or("severity.eq.critical,safety_critical.eq.true");
+
   const visibleAnnouncements = announcementRows
     .filter((announcement) => {
       if (isAdmin) {
@@ -246,6 +221,37 @@ export default async function DashboardPage({
           },
         ]
       : []),
+  ];
+
+  const metricCards = [
+    {
+      title: "Open critical faults",
+      value: String(openCriticalFaultsCount ?? 0),
+      description: "Critical or safety-critical issues still needing closure.",
+      icon: AlertTriangle,
+      tone: "text-red-700 bg-red-50 border-red-100",
+    },
+    {
+      title: "Upcoming tests",
+      value: "0",
+      description: "Scheduled track, bench, and systems tests.",
+      icon: CalendarDays,
+      tone: "text-primary bg-accent border-ring/15",
+    },
+    {
+      title: "Safety acknowledgements",
+      value: "0",
+      description: "Documents requiring member confirmation.",
+      icon: FileCheck2,
+      tone: "text-amber-700 bg-amber-50 border-amber-200",
+    },
+    {
+      title: "Competition readiness",
+      value: "Setup",
+      description: "Readiness checklist status will be tracked here.",
+      icon: Gauge,
+      tone: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    },
   ];
 
   return (
